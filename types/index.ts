@@ -18,7 +18,7 @@ export interface Transaction {
   amount: number;
   date: string; // ISO string
   description: string;
-  category?: Category;
+  category?: string;
   type: 'income' | 'expense';
   createdAt?: Date;
   updatedAt?: Date;

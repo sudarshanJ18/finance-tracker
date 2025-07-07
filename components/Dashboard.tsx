@@ -18,12 +18,11 @@ import {
   Calendar,
   CreditCard,
   Wallet,
-  Target,
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
 
-const AnimatedDashboard = () => {
+const FinancialDashboard = () => {
   const [transactions, setTransactions] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -124,7 +123,7 @@ const AnimatedDashboard = () => {
     const categoryBreakdown = Object.entries(categoryTotals).map(([category, amount]) => ({
       category,
       amount,
-      percentage: (amount / totalExpenses) * 100,
+      percentage: totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0,
       color: categories[category]?.color || '#6B7280'
     }));
     
@@ -278,8 +277,8 @@ const AnimatedDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div className="text-center py-8 animate-fade-in">
-          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+        <div className="text-center py-8">
+          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4 animate-pulse">
             Financial Dashboard
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -288,7 +287,7 @@ const AnimatedDashboard = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-center gap-4 animate-slide-up">
+        <div className="flex justify-center gap-4">
           <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
@@ -306,7 +305,7 @@ const AnimatedDashboard = () => {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-stagger" key={animationTrigger}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" key={animationTrigger}>
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">Total Income</CardTitle>
@@ -381,7 +380,7 @@ const AnimatedDashboard = () => {
         </div>
 
         {/* Category Breakdown */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl animate-fade-in-up">
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
           <CardHeader className="pb-4">
             <CardTitle className="text-2xl font-bold text-gray-800 flex items-center gap-2">
               <PieChart className="w-6 h-6 text-blue-600" />
@@ -393,8 +392,7 @@ const AnimatedDashboard = () => {
               {summary.categoryBreakdown.map((category, index) => (
                 <div 
                   key={category.category} 
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300 animate-slide-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300"
                 >
                   <div className="flex items-center gap-3">
                     <div
@@ -427,7 +425,7 @@ const AnimatedDashboard = () => {
         </Card>
 
         {/* Recent Transactions */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl animate-fade-in-up">
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
           <CardHeader className="pb-4">
             <CardTitle className="text-2xl font-bold text-gray-800 flex items-center gap-2">
               <CreditCard className="w-6 h-6 text-blue-600" />
@@ -439,8 +437,7 @@ const AnimatedDashboard = () => {
               {transactions.slice().reverse().map((transaction, index) => (
                 <div
                   key={transaction._id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-102 animate-slide-in group"
-                  style={{ animationDelay: `${index * 0.05}s` }}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-102 group"
                 >
                   <div className="flex items-center gap-4">
                     <div className={`p-2 rounded-full ${transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'}`}>
@@ -507,63 +504,8 @@ const AnimatedDashboard = () => {
           </DialogContent>
         </Dialog>
       </div>
-
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes slide-up {
-          from { opacity: 0; transform: translateY(40px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes slide-in {
-          from { opacity: 0; transform: translateX(-20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        
-        @keyframes fade-in-up {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-fade-in {
-          animation: fade-in 0.8s ease-out;
-        }
-        
-        .animate-slide-up {
-          animation: slide-up 0.6s ease-out 0.2s both;
-        }
-        
-        .animate-slide-in {
-          animation: slide-in 0.5s ease-out both;
-        }
-        
-        .animate-fade-in-up {
-          animation: fade-in-up 0.7s ease-out 0.3s both;
-        }
-        
-        .animate-stagger > * {
-          animation: fade-in-up 0.6s ease-out both;
-        }
-        
-        .animate-stagger > *:nth-child(1) { animation-delay: 0.1s; }
-        .animate-stagger > *:nth-child(2) { animation-delay: 0.2s; }
-        .animate-stagger > *:nth-child(3) { animation-delay: 0.3s; }
-        .animate-stagger > *:nth-child(4) { animation-delay: 0.4s; }
-        
-        .transform:hover {
-          transform: translateY(-8px) scale(1.02);
-        }
-        
-        .hover\\:scale-102:hover {
-          transform: scale(1.02);
-        }
-      `}</style>
     </div>
   );
 };
 
-export default AnimatedDashboard;
+export default FinancialDashboard;

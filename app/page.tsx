@@ -24,17 +24,19 @@ export default function Home() {
       if (response.ok) {
         const data = await response.json();
         
-        // Ensure proper Transaction type with string dates
-        const sanitizedData = data.map((t: any) => ({
-          _id: t._id,
-          amount: t.amount,
-          date: t.date,
-          description: t.description,
-          category: CATEGORIES.includes(t.category) ? t.category : 'other',
-          type: t.type,
-          createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : undefined,
-          updatedAt: t.updatedAt ? new Date(t.updatedAt).toISOString() : undefined,
-        })) as Transaction[];
+        const sanitizedData = data.map((t: any) => {
+          // Ensure category is valid
+          const category = CATEGORIES.includes(t.category) 
+            ? t.category 
+            : 'other';
+            
+          return {
+            ...t,
+            category,
+            createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : undefined,
+            updatedAt: t.updatedAt ? new Date(t.updatedAt).toISOString() : undefined,
+          } as Transaction;
+        });
 
         setTransactions(sanitizedData);
       }

@@ -38,16 +38,7 @@ import {
   PieChart,
   Activity
 } from 'lucide-react';
-
-interface Transaction {
-  _id?: string;
-  amount: number;
-  date: string;
-  description: string;
-  category: string;
-  type: 'expense' | 'income';
-  createdAt?: string;
-}
+import { Transaction, CATEGORIES } from '@/types';
 
 interface TransactionListProps {
   transactions?: Transaction[];

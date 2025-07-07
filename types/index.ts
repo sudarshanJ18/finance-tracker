@@ -1,4 +1,4 @@
-export const CATEGORIES = [
+xport const CATEGORIES = [
   'food',
   'transportation',
   'entertainment',
@@ -14,12 +14,12 @@ export type Category = typeof CATEGORIES[number];
 export interface Transaction {
   _id?: string;
   amount: number;
-  date: string; // ISO string
+  date: string;
   description: string;
   category: Category;
   type: 'income' | 'expense';
-  createdAt?: string; // Changed from Date to string
-  updatedAt?: string; // Changed from Date to string
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface MonthlyExpense {

@@ -1,4 +1,4 @@
-xport const CATEGORIES = [
+export const CATEGORIES = [
   'food',
   'transportation',
   'entertainment',

@@ -16,10 +16,10 @@ export interface Transaction {
   amount: number;
   date: string; // ISO string
   description: string;
-  category: Category; // Changed from optional to required
+  category: Category;
   type: 'income' | 'expense';
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: string; // Changed from Date to string
+  updatedAt?: string; // Changed from Date to string
 }
 
 export interface MonthlyExpense {
@@ -39,8 +39,8 @@ export interface Budget {
   amount: number;
   month: string;
   year: number;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface BudgetComparison {

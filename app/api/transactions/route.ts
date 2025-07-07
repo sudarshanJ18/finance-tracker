@@ -75,7 +75,8 @@ export async function POST(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
     
-    const transaction: Partial<Transaction> = {
+    // Create transaction object without _id - MongoDB will generate it
+    const transaction = {
       amount: parseFloat(amount),
       date,
       description: description.trim(),

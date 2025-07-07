@@ -35,27 +35,28 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { category, amount, month, year } = body;
-    
+
     if (!category || !amount || !month || !year) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
-    
+
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
-    
+
+    const yearInt = parseInt(year);
+
     // Check if budget already exists for this category/month/year
     const existingBudget = await db.collection('budgets').findOne({
       category,
       month,
-      year: parseInt(year),
+      year: yearInt,
     });
-    
+
     if (existingBudget) {
-      // Update existing budget
-      const result = await db.collection('budgets').updateOne(
+      await db.collection('budgets').updateOne(
         { _id: existingBudget._id },
         {
           $set: {
@@ -64,28 +65,28 @@ export async function POST(request: NextRequest) {
           },
         }
       );
-      
+
       return NextResponse.json({
         _id: existingBudget._id,
         category,
         amount: parseFloat(amount),
         month,
-        year: parseInt(year),
+        year: yearInt,
         updatedAt: new Date(),
       });
     } else {
-      // Create new budget
-      const budget: Partial<Budget> = {
+      // Create a new budget object without _id
+      const budget = {
         category,
         amount: parseFloat(amount),
         month,
-        year: parseInt(year),
+        year: yearInt,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      
+
       const result = await db.collection('budgets').insertOne(budget);
-      
+
       return NextResponse.json({
         _id: result.insertedId,
         ...budget,

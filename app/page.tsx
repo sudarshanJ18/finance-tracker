@@ -22,13 +22,19 @@ export default function Home() {
     try {
       const response = await fetch('/api/transactions');
       if (response.ok) {
-        const data: Transaction[] = await response.json();
-
-        // Ensure 'category' is always a valid value
-        const sanitizedData = data.map((t) => ({
-          ...t,
-          category: CATEGORIES.includes(t.category as any) ? t.category : 'other',
-        }));
+        const data = await response.json();
+        
+        // Type guard to ensure proper Transaction array
+        const sanitizedData = data.map((t: any) => ({
+          _id: t._id,
+          amount: t.amount,
+          date: t.date,
+          description: t.description,
+          category: CATEGORIES.includes(t.category) ? t.category : 'other',
+          type: t.type,
+          createdAt: t.createdAt ? new Date(t.createdAt) : undefined,
+          updatedAt: t.updatedAt ? new Date(t.updatedAt) : undefined,
+        })) as Transaction[];
 
         setTransactions(sanitizedData);
       }

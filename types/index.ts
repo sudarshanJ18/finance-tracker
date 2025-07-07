@@ -16,7 +16,7 @@ export interface Transaction {
   amount: number;
   date: string; // ISO string
   description: string;
-  category?: Category; // ✅ updated
+  category: Category; // Changed from optional to required
   type: 'income' | 'expense';
   createdAt?: Date;
   updatedAt?: Date;

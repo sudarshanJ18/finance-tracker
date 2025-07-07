@@ -3,45 +3,79 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { TrendingUp, DollarSign, Target, Activity } from 'lucide-react';
 
-// Sample data generator
-const generateSampleData = () => {
-  const categories = [
-    { name: 'Food', color: '#FF6B6B' },
-    { name: 'Transportation', color: '#4ECDC4' },
-    { name: 'Entertainment', color: '#45B7D1' },
-    { name: 'Utilities', color: '#96CEB4' },
-    { name: 'Shopping', color: '#FFEAA7' },
-    { name: 'Healthcare', color: '#DDA0DD' },
-    { name: 'Education', color: '#98D8C8' },
-    { name: 'Rent', color: '#F7DC6F' },
-  ];
+interface CategoryData {
+  category: string;
+  amount: number;
+  color?: string;
+  percentage?: number;
+}
 
-  const data = categories.map(cat => ({
-    category: cat.name,
-    amount: Math.floor(Math.random() * 1000) + 100,
-    color: cat.color,
-    percentage: 0
-  }));
+interface CategoryPieChartProps {
+  data?: CategoryData[];
+}
 
-  // Calculate percentages
-  const total = data.reduce((sum, item) => sum + item.amount, 0);
-  data.forEach(item => {
-    item.percentage = (item.amount / total) * 100;
-  });
-
-  return data.sort((a, b) => b.amount - a.amount);
-};
-
-export default function CategoryPieChart() {
-  const [data, setData] = useState([]);
+export default function CategoryPieChart({ data: propData }: CategoryPieChartProps) {
+  const [data, setData] = useState<CategoryData[]>([]);
   const [isVisible, setIsVisible] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [animationProgress, setAnimationProgress] = useState(0);
 
+  // Helper function to generate random colors
+  const getRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+
+  // Sample data generator (only used if no prop data is provided)
+  const generateSampleData = (): CategoryData[] => {
+    const categories = [
+      { name: 'Food', color: '#FF6B6B' },
+      { name: 'Transportation', color: '#4ECDC4' },
+      { name: 'Entertainment', color: '#45B7D1' },
+      { name: 'Utilities', color: '#96CEB4' },
+      { name: 'Shopping', color: '#FFEAA7' },
+      { name: 'Healthcare', color: '#DDA0DD' },
+      { name: 'Education', color: '#98D8C8' },
+      { name: 'Rent', color: '#F7DC6F' },
+    ];
+
+    const data = categories.map(cat => ({
+      category: cat.name,
+      amount: Math.floor(Math.random() * 1000) + 100,
+      color: cat.color,
+      percentage: 0
+    }));
+
+    // Calculate percentages
+    const total = data.reduce((sum, item) => sum + item.amount, 0);
+    data.forEach(item => {
+      item.percentage = (item.amount / total) * 100;
+    });
+
+    return data.sort((a, b) => b.amount - a.amount);
+  };
+
   useEffect(() => {
-    // Generate sample data
-    const sampleData = generateSampleData();
-    setData(sampleData);
+    // Use prop data if available, otherwise generate sample data
+    if (propData && propData.length > 0) {
+      // Calculate percentages if not provided
+      const total = propData.reduce((sum, item) => sum + item.amount, 0);
+      const processedData = propData.map(item => ({
+        ...item,
+        percentage: item.percentage || (item.amount / total) * 100,
+        color: item.color || getRandomColor()
+      })).sort((a, b) => b.amount - a.amount);
+      
+      setData(processedData);
+    } else {
+      // Generate sample data
+      const sampleData = generateSampleData();
+      setData(sampleData);
+    }
     
     // Trigger visibility animation
     setTimeout(() => setIsVisible(true), 100);
@@ -58,9 +92,9 @@ export default function CategoryPieChart() {
     }, 30);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [propData]);
 
-  const CustomTooltip = ({ active, payload }) => {
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -74,12 +108,14 @@ export default function CategoryPieChart() {
     return null;
   };
 
-  const CustomLegend = ({ payload }) => {
+  const CustomLegend = ({ payload }: { payload?: any[] }) => {
+    if (!payload) return null;
+    
     return (
       <div className="flex flex-wrap justify-center gap-2 mt-4">
         {payload.map((entry, index) => (
           <div
-            key={index}
+            key={`item-${index}`}
             className="flex items-center gap-1 px-2 py-1 bg-white rounded-full shadow-sm border hover:shadow-md transition-all duration-200 cursor-pointer"
             onClick={() => setSelectedCategory(selectedCategory === entry.value ? null : entry.value)}
           >
@@ -238,7 +274,7 @@ export default function CategoryPieChart() {
                 <div className="space-y-4">
                   {data.map((category, index) => (
                     <div 
-                      key={category.category}
+                      key={`category-${index}`}
                       className={`p-4 rounded-lg border transition-all duration-300 cursor-pointer ${
                         selectedCategory === category.category 
                           ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-300 shadow-md' 
@@ -255,7 +291,7 @@ export default function CategoryPieChart() {
                           />
                           <div>
                             <p className="font-medium text-gray-800">{category.category}</p>
-                            <p className="text-sm text-gray-500">{category.percentage.toFixed(1)}% of total</p>
+                            <p className="text-sm text-gray-500">{category.percentage?.toFixed(1)}% of total</p>
                           </div>
                         </div>
                         <div className="text-right">
@@ -270,7 +306,7 @@ export default function CategoryPieChart() {
                             className="h-2 rounded-full transition-all duration-1000 ease-out"
                             style={{ 
                               backgroundColor: category.color,
-                              width: `${(category.percentage / 100) * animationProgress}%`
+                              width: `${((category.percentage || 0) / 100) * animationProgress}%`
                             }}
                           />
                         </div>

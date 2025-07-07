@@ -1,4 +1,3 @@
-
 export const CATEGORIES = [
   'food',
   'transportation',
@@ -7,26 +6,24 @@ export const CATEGORIES = [
   'shopping',
   'healthcare',
   'education',
-  'other'
+  'other',
 ] as const;
 
 export type Category = typeof CATEGORIES[number];
-
 
 export interface Transaction {
   _id?: string;
   amount: number;
   date: string; // ISO string
   description: string;
-  category?: string;
+  category?: Category; // ✅ updated
   type: 'income' | 'expense';
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-
 export interface MonthlyExpense {
-  month: string; // e.g., "2025-07"
+  month: string;
   amount: number;
 }
 
@@ -40,7 +37,7 @@ export interface Budget {
   _id?: string;
   category: Category;
   amount: number;
-  month: string; // e.g., "July"
+  month: string;
   year: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -55,7 +52,6 @@ export interface BudgetComparison {
   status: 'under' | 'over' | 'on-track';
 }
 
-
 export interface SpendingInsight {
   type: 'warning' | 'success' | 'info';
   category: Category;
@@ -63,8 +59,6 @@ export interface SpendingInsight {
   amount?: number;
   percentage?: number;
 }
-
-
 
 export interface CategorySummary {
   category: Category;

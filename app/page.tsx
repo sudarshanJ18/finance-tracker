@@ -4,14 +4,13 @@ import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TransactionForm from '@/components/TransactionForm';
 import TransactionList from '@/components/TransactionList';
-import MonthlyExpensesChart from '@/components//MonthlyExpensesChart';
+import MonthlyExpensesChart from '@/components/MonthlyExpensesChart';
 import CategoryPieChart from '@/components/CategoryPieChart';
 import Dashboard from '@/components/Dashboard';
-// You can create these components for budgeting features
 import BudgetComparisonChart from '@/components/BudgetComparisonChart';
 import SpendingInsights from '@/components/SpendingInsights';
 
-import { Transaction, DashboardSummary } from '@/types';
+import { Transaction, DashboardSummary, CATEGORIES } from '@/types';
 
 export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -23,8 +22,15 @@ export default function Home() {
     try {
       const response = await fetch('/api/transactions');
       if (response.ok) {
-        const data = await response.json();
-        setTransactions(data);
+        const data: Transaction[] = await response.json();
+
+        // Ensure 'category' is always a valid value
+        const sanitizedData = data.map((t) => ({
+          ...t,
+          category: CATEGORIES.includes(t.category as any) ? t.category : 'other',
+        }));
+
+        setTransactions(sanitizedData);
       }
     } catch (error) {
       console.error('Error fetching transactions:', error);
@@ -35,7 +41,7 @@ export default function Home() {
     try {
       const response = await fetch('/api/dashboard');
       if (response.ok) {
-        const data = await response.json();
+        const data: DashboardSummary = await response.json();
         setDashboardData(data);
       }
     } catch (error) {
@@ -122,7 +128,6 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="budget" className="space-y-6">
-            {/* These components are optional and should be implemented in Stage 3 */}
             <BudgetComparisonChart />
             <SpendingInsights />
           </TabsContent>

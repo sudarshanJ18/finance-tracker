@@ -12,17 +12,58 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { TrendingUp, TrendingDown, Target, DollarSign, AlertTriangle, CheckCircle, Plus, Edit, Trash2, Calendar, PieChart } from 'lucide-react';
 
-const BudgetComparison = () => {
-  const [budgets, setBudgets] = useState([]);
-  const [transactions, setTransactions] = useState([]);
-  const [animatedValues, setAnimatedValues] = useState({});
-  const [isVisible, setIsVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [editingBudget, setEditingBudget] = useState(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState('month');
-  const [budgetForm, setBudgetForm] = useState({
+// Type definitions
+interface Budget {
+  id: number;
+  category: string;
+  amount: number;
+  period: string;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+}
+
+interface Transaction {
+  id: number;
+  category: string;
+  amount: number;
+  type: 'income' | 'expense';
+  date: string;
+  description?: string;
+}
+
+interface BudgetComparison extends Budget {
+  spent: number;
+  remaining: number;
+  percentage: number;
+  trend: 'up' | 'down';
+}
+
+interface BudgetForm {
+  category: string;
+  amount: string;
+  period: string;
+  startDate: string;
+  endDate: string;
+}
+
+interface BudgetStatus {
+  status: 'over' | 'warning' | 'good';
+  color: string;
+  bgColor: string;
+}
+
+const BudgetComparison: React.FC = () => {
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [animatedValues, setAnimatedValues] = useState<{ [key: number]: number }>({});
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('month');
+  const [budgetForm, setBudgetForm] = useState<BudgetForm>({
     category: '',
     amount: '',
     period: 'month',
@@ -38,11 +79,11 @@ const BudgetComparison = () => {
   }, []);
 
   // Load budgets from localStorage
-  const loadBudgets = () => {
+  const loadBudgets = (): void => {
     try {
       const storedBudgets = localStorage.getItem('budgets');
       if (storedBudgets) {
-        setBudgets(JSON.parse(storedBudgets));
+        setBudgets(JSON.parse(storedBudgets) as Budget[]);
       }
     } catch (error) {
       console.error('Error loading budgets:', error);
@@ -50,11 +91,11 @@ const BudgetComparison = () => {
   };
 
   // Load transactions from localStorage
-  const loadTransactions = () => {
+  const loadTransactions = (): void => {
     try {
       const storedTransactions = localStorage.getItem('transactions');
       if (storedTransactions) {
-        setTransactions(JSON.parse(storedTransactions));
+        setTransactions(JSON.parse(storedTransactions) as Transaction[]);
       }
     } catch (error) {
       console.error('Error loading transactions:', error);
@@ -62,7 +103,7 @@ const BudgetComparison = () => {
   };
 
   // Save budgets to localStorage
-  const saveBudgets = (budgetData) => {
+  const saveBudgets = (budgetData: Budget[]): void => {
     try {
       localStorage.setItem('budgets', JSON.stringify(budgetData));
     } catch (error) {
@@ -71,7 +112,7 @@ const BudgetComparison = () => {
   };
 
   // Calculate spending for each budget category
-  const calculateSpending = (category, startDate, endDate) => {
+  const calculateSpending = (category: string, startDate: string, endDate: string): number => {
     const categoryTransactions = transactions.filter(t => 
       t.category === category &&
       t.type === 'expense' &&
@@ -79,11 +120,11 @@ const BudgetComparison = () => {
       new Date(t.date) <= new Date(endDate)
     );
     
-    return categoryTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+    return categoryTransactions.reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0);
   };
 
   // Get budget comparison data
-  const getBudgetComparisonData = () => {
+  const getBudgetComparisonData = (): BudgetComparison[] => {
     return budgets.map(budget => {
       const spent = calculateSpending(budget.category, budget.startDate, budget.endDate);
       const remaining = budget.amount - spent;
@@ -100,7 +141,7 @@ const BudgetComparison = () => {
   };
 
   // Handle budget form submission
-  const handleBudgetSubmit = async (e) => {
+  const handleBudgetSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -110,14 +151,14 @@ const BudgetComparison = () => {
         throw new Error('Please fill in all required fields');
       }
 
-      const budgetData = {
+      const budgetData: Budget = {
         id: editingBudget ? editingBudget.id : Date.now(),
         ...budgetForm,
         amount: parseFloat(budgetForm.amount),
         createdAt: editingBudget ? editingBudget.createdAt : new Date().toISOString()
       };
 
-      let updatedBudgets;
+      let updatedBudgets: Budget[];
       if (editingBudget) {
         updatedBudgets = budgets.map(b => b.id === editingBudget.id ? budgetData : b);
       } else {
@@ -137,21 +178,21 @@ const BudgetComparison = () => {
       setEditingBudget(null);
       setIsDialogOpen(false);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
   };
 
   // Handle budget deletion
-  const handleDeleteBudget = (id) => {
+  const handleDeleteBudget = (id: number): void => {
     const updatedBudgets = budgets.filter(b => b.id !== id);
     setBudgets(updatedBudgets);
     saveBudgets(updatedBudgets);
   };
 
   // Handle editing budget
-  const handleEditBudget = (budget) => {
+  const handleEditBudget = (budget: Budget): void => {
     setEditingBudget(budget);
     setBudgetForm({
       category: budget.category,
@@ -183,7 +224,7 @@ const BudgetComparison = () => {
   const totalRemaining = totalBudgeted - totalSpent;
   const overallPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;
 
-  const getBudgetStatus = (percentage) => {
+  const getBudgetStatus = (percentage: number): BudgetStatus => {
     if (percentage > 100) return { status: 'over', color: 'text-red-600', bgColor: 'bg-red-50' };
     if (percentage > 90) return { status: 'warning', color: 'text-amber-600', bgColor: 'bg-amber-50' };
     return { status: 'good', color: 'text-emerald-600', bgColor: 'bg-emerald-50' };

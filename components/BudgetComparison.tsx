@@ -112,6 +112,7 @@ const saveBudgets = (budgetData: Budget[]): void => {
 
   // Calculate spending for a category within date range
 const calculateSpending = (category: string, startDate: string, endDate: string): number => {
+
   const categoryTransactions = transactions.filter(t => 
     t.category === category &&
     t.type === 'expense' &&

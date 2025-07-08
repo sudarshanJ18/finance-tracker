@@ -102,14 +102,13 @@ const BudgetComparison: React.FC = () => {
     }
   };
 
-  // Save budgets to localStorage
-  const saveBudgets = (budgetData: Budget[]): void => {
-    try {
-      localStorage.setItem('budgets', JSON.stringify(budgetData));
-    } catch (error) {
-      console.error('Error saving budgets:', error);
-    }
-  };
+const saveBudgets = (budgetData: Budget[]): void => {
+  try {
+    localStorage.setItem('budgets', JSON.stringify(budgetData));
+  } catch (error) {
+    console.error('Error saving budgets:', error);
+  }
+};
 
   // Calculate spending for each budget category
   const calculateSpending = (category: string, startDate: string, endDate: string): number => {

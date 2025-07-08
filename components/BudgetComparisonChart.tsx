@@ -27,17 +27,68 @@ import {
   EyeOff
 } from 'lucide-react';
 
+// Type definitions
+interface Budget {
+  id: string;
+  category: string;
+  amount: number;
+  period: string;
+  startDate: string;
+  endDate: string;
+}
+
+interface Transaction {
+  id: string;
+  category: string;
+  type: 'expense' | 'income';
+  amount: number;
+  date: string;
+  description: string;
+}
+
+interface ChartDataItem {
+  category: string;
+  budgetAmount: number;
+  actualAmount: number;
+  variance: number;
+  percentageUsed: number;
+  status: 'over' | 'warning' | 'good';
+  remaining: number;
+}
+
+interface SummaryStats {
+  totalBudget: number;
+  totalActual: number;
+  totalVariance: number;
+  overBudgetCount: number;
+  warningCount: number;
+  averageUsage: number;
+}
+
+interface TooltipProps {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+}
+
 const BudgetComparisonChart = () => {
-  const [budgets, setBudgets] = useState([]);
-  const [transactions, setTransactions] = useState([]);
-  const [chartType, setChartType] = useState('bar');
-  const [timeRange, setTimeRange] = useState('month');
-  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [chartType, setChartType] = useState<'bar' | 'line' | 'area' | 'pie'>('bar');
+  const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter' | 'year'>('month');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [animationEnabled, setAnimationEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
-  const [chartData, setChartData] = useState([]);
-  const [summaryStats, setSummaryStats] = useState({});
+  const [chartData, setChartData] = useState<ChartDataItem[]>([]);
+  const [summaryStats, setSummaryStats] = useState<SummaryStats>({
+    totalBudget: 0,
+    totalActual: 0,
+    totalVariance: 0,
+    overBudgetCount: 0,
+    warningCount: 0,
+    averageUsage: 0
+  });
 
   // Color palette for charts
   const colors = [
@@ -65,10 +116,10 @@ const BudgetComparisonChart = () => {
       const storedTransactions = localStorage.getItem('transactions');
       
       if (storedBudgets) {
-        setBudgets(JSON.parse(storedBudgets));
+        setBudgets(JSON.parse(storedBudgets) as Budget[]);
       }
       if (storedTransactions) {
-        setTransactions(JSON.parse(storedTransactions));
+        setTransactions(JSON.parse(storedTransactions) as Transaction[]);
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -86,13 +137,13 @@ const BudgetComparisonChart = () => {
       new Date(t.date) <= new Date(endDate)
     );
     
-    return categoryTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+    return categoryTransactions.reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0);
   };
 
   // Get date range based on selected time range
   const getDateRange = () => {
     const now = new Date();
-    let startDate, endDate;
+    let startDate: Date, endDate: Date;
 
     switch (timeRange) {
       case 'week':
@@ -117,7 +168,7 @@ const BudgetComparisonChart = () => {
         endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     }
 
-    return { startDate, endDate };
+    return { startDate: startDate.toISOString(), endDate: endDate.toISOString() };
   };
 
   // Calculate chart data based on current filters
@@ -129,7 +180,7 @@ const BudgetComparisonChart = () => {
       filteredBudgets = budgets.filter(b => selectedCategories.includes(b.category));
     }
 
-    const data = filteredBudgets.map(budget => {
+    const data: ChartDataItem[] = filteredBudgets.map(budget => {
       const actualSpending = calculateSpending(budget.category, startDate, endDate);
       const budgetAmount = budget.amount;
       const variance = actualSpending - budgetAmount;
@@ -166,13 +217,13 @@ const BudgetComparisonChart = () => {
   };
 
   // Custom tooltip for charts
-  const CustomTooltip = ({ active, payload, label }) => {
+  const CustomTooltip: React.FC<TooltipProps> = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+      const data = payload[0].payload as ChartDataItem;
       return (
         <div className="bg-white p-4 border rounded-lg shadow-lg">
           <p className="font-semibold mb-2">{label}</p>
-          {payload.map((entry, index) => (
+          {payload.map((entry: any, index: number) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
               {entry.name}: ${entry.value.toLocaleString()}
             </p>
@@ -320,7 +371,7 @@ const BudgetComparisonChart = () => {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
                 outerRadius={120}
                 fill="#8884d8"
                 dataKey="value"
@@ -331,7 +382,7 @@ const BudgetComparisonChart = () => {
                 ))}
               </Pie>
               <Tooltip 
-                formatter={(value) => [`$${value.toLocaleString()}`, 'Spending']}
+                formatter={(value: number) => [`$${value.toLocaleString()}`, 'Spending']}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -351,9 +402,9 @@ const BudgetComparisonChart = () => {
       ['Category', 'Budget Amount', 'Actual Amount', 'Variance', 'Percentage Used', 'Status'],
       ...chartData.map(item => [
         item.category,
-        item.budgetAmount,
-        item.actualAmount,
-        item.variance,
+        item.budgetAmount.toString(),
+        item.actualAmount.toString(),
+        item.variance.toString(),
         item.percentageUsed.toFixed(2) + '%',
         item.status
       ])
@@ -487,7 +538,7 @@ const BudgetComparisonChart = () => {
           <div className="flex flex-wrap gap-4 items-center">
             <div className="flex items-center gap-2">
               <Label>Chart Type:</Label>
-              <Select value={chartType} onValueChange={setChartType}>
+              <Select value={chartType} onValueChange={(value) => setChartType(value as 'bar' | 'line' | 'area' | 'pie')}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
@@ -502,7 +553,7 @@ const BudgetComparisonChart = () => {
 
             <div className="flex items-center gap-2">
               <Label>Time Range:</Label>
-              <Select value={timeRange} onValueChange={setTimeRange}>
+              <Select value={timeRange} onValueChange={(value) => setTimeRange(value as 'week' | 'month' | 'quarter' | 'year')}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>

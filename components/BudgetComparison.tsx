@@ -110,17 +110,17 @@ const saveBudgets = (budgetData: Budget[]): void => {
   }
 };
 
-  // Calculate spending for each budget category
-  const calculateSpending = (category: string, startDate: string, endDate: string): number => {
-    const categoryTransactions = transactions.filter(t => 
-      t.category === category &&
-      t.type === 'expense' &&
-      new Date(t.date) >= new Date(startDate) &&
-      new Date(t.date) <= new Date(endDate)
-    );
-    
-    return categoryTransactions.reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0);
-  };
+  // Calculate spending for a category within date range
+const calculateSpending = (category: string, startDate: string, endDate: string): number => {
+  const categoryTransactions = transactions.filter(t => 
+    t.category === category &&
+    t.type === 'expense' &&
+    new Date(t.date) >= new Date(startDate) &&
+    new Date(t.date) <= new Date(endDate)
+  );
+  
+  return categoryTransactions.reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0);
+};
 
   // Get budget comparison data
   const getBudgetComparisonData = (): BudgetComparison[] => {

@@ -55,7 +55,14 @@ interface BudgetStatus {
 
 const BudgetComparison: React.FC = () => {
   const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([
+    // Sample transactions for demonstration
+    { id: 1, category: 'Food & Dining', amount: 150, type: 'expense', date: '2024-12-01', description: 'Restaurant' },
+    { id: 2, category: 'Transportation', amount: 80, type: 'expense', date: '2024-12-02', description: 'Gas' },
+    { id: 3, category: 'Entertainment', amount: 50, type: 'expense', date: '2024-12-03', description: 'Movie tickets' },
+    { id: 4, category: 'Shopping', amount: 200, type: 'expense', date: '2024-12-04', description: 'Clothes' },
+    { id: 5, category: 'Utilities', amount: 120, type: 'expense', date: '2024-12-05', description: 'Electric bill' },
+  ]);
   const [animatedValues, setAnimatedValues] = useState<{ [key: number]: number }>({});
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -71,57 +78,53 @@ const BudgetComparison: React.FC = () => {
     endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0]
   });
 
-  // Load data from localStorage on component mount
+  // Load data on component mount
   useEffect(() => {
-    loadBudgets();
-    loadTransactions();
+    // Sample budgets for demonstration
+    const sampleBudgets: Budget[] = [
+      {
+        id: 1,
+        category: 'Food & Dining',
+        amount: 500,
+        period: 'month',
+        startDate: '2024-12-01',
+        endDate: '2024-12-31',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        category: 'Transportation',
+        amount: 300,
+        period: 'month',
+        startDate: '2024-12-01',
+        endDate: '2024-12-31',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 3,
+        category: 'Entertainment',
+        amount: 200,
+        period: 'month',
+        startDate: '2024-12-01',
+        endDate: '2024-12-31',
+        createdAt: new Date().toISOString()
+      }
+    ];
+    setBudgets(sampleBudgets);
     setIsVisible(true);
   }, []);
 
-  // Load budgets from localStorage
-  const loadBudgets = (): void => {
-    try {
-      const storedBudgets = localStorage.getItem('budgets');
-      if (storedBudgets) {
-        setBudgets(JSON.parse(storedBudgets) as Budget[]);
-      }
-    } catch (error) {
-      console.error('Error loading budgets:', error);
-    }
-  };
-
-  // Load transactions from localStorage
-  const loadTransactions = (): void => {
-    try {
-      const storedTransactions = localStorage.getItem('transactions');
-      if (storedTransactions) {
-        setTransactions(JSON.parse(storedTransactions) as Transaction[]);
-      }
-    } catch (error) {
-      console.error('Error loading transactions:', error);
-    }
-  };
-
-const saveBudgets = (budgetData: Budget[]): void => {
-  try {
-    localStorage.setItem('budgets', JSON.stringify(budgetData));
-  } catch (error) {
-    console.error('Error saving budgets:', error);
-  }
-};
-
   // Calculate spending for a category within date range
-const calculateSpending = (category: string, startDate: string, endDate: string): number => {
-
-  const categoryTransactions = transactions.filter(t => 
-    t.category === category &&
-    t.type === 'expense' &&
-    new Date(t.date) >= new Date(startDate) &&
-    new Date(t.date) <= new Date(endDate)
-  );
-  
-  return categoryTransactions.reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0);
-};
+  const calculateSpending = (category: string, startDate: string, endDate: string): number => {
+    const categoryTransactions = transactions.filter(t => 
+      t.category === category &&
+      t.type === 'expense' &&
+      new Date(t.date) >= new Date(startDate) &&
+      new Date(t.date) <= new Date(endDate)
+    );
+    
+    return categoryTransactions.reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0);
+  };
 
   // Get budget comparison data
   const getBudgetComparisonData = (): BudgetComparison[] => {
@@ -166,7 +169,6 @@ const calculateSpending = (category: string, startDate: string, endDate: string)
       }
 
       setBudgets(updatedBudgets);
-      saveBudgets(updatedBudgets);
       
       setBudgetForm({
         category: '',
@@ -188,7 +190,6 @@ const calculateSpending = (category: string, startDate: string, endDate: string)
   const handleDeleteBudget = (id: number): void => {
     const updatedBudgets = budgets.filter(b => b.id !== id);
     setBudgets(updatedBudgets);
-    saveBudgets(updatedBudgets);
   };
 
   // Handle editing budget
@@ -264,7 +265,7 @@ const calculateSpending = (category: string, startDate: string, endDate: string)
                 <DialogHeader>
                   <DialogTitle>{editingBudget ? 'Edit Budget' : 'Create New Budget'}</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleBudgetSubmit} className="space-y-4">
+                <div className="space-y-4">
                   <div>
                     <Label htmlFor="category">Category</Label>
                     <Select 
@@ -332,7 +333,15 @@ const calculateSpending = (category: string, startDate: string, endDate: string)
                   )}
                   
                   <div className="flex gap-2">
-                    <Button type="submit" disabled={loading} className="flex-1">
+                    <Button 
+                      type="button" 
+                      disabled={loading} 
+                      className="flex-1"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleBudgetSubmit(e as any);
+                      }}
+                    >
                       {loading ? 'Saving...' : editingBudget ? 'Update Budget' : 'Create Budget'}
                     </Button>
                     <Button 
@@ -353,7 +362,7 @@ const calculateSpending = (category: string, startDate: string, endDate: string)
                       Cancel
                     </Button>
                   </div>
-                </form>
+                </div>
               </DialogContent>
             </Dialog>
           </div>
